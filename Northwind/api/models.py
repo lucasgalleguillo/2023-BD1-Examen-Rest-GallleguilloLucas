@@ -103,6 +103,11 @@ class Orderdetails(models.Model):
         managed = False
         db_table = 'OrderDetails'
         unique_together = (('orderid', 'productid'),)
+    
+    def calcularSubTotal(self):
+        total= self.unitprice * self.quantity
+        return total
+
 
 
 class Orders(models.Model):
@@ -121,6 +126,12 @@ class Orders(models.Model):
     shippostalcode = models.CharField(db_column='ShipPostalCode', max_length=10, blank=True, null=True)  # Field name made lowercase.
     shipcountry = models.CharField(db_column='ShipCountry', max_length=15, blank=True, null=True)  # Field name made lowercase.
 
+    def calcularTotal(Orderdetails):
+        total = 0
+        for orderdetail in  Orderdetails:
+            total += orderdetail.calcularSubTotal()
+        return total
+    
     class Meta:
         managed = False
         db_table = 'Orders'

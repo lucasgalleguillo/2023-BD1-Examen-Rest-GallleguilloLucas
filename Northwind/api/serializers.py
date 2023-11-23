@@ -43,27 +43,8 @@ class EmployeeSerializer (SerializadorPadre):
       model = Employees
       fields = '__all__'
 
-
-'''
-
-F
-
 class Punto1Serializer(serializers.Serializer):
    id = serializers.IntegerField()
-   apellido = serializers.CharField()
    nombre = serializers.CharField()
-   birthdate = serializers.DateTimeField()
-'''
-
-'''
-
-T
-
-class Punto1Serializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    apellido = serializers.CharField(max_length=50)
-    descripcion = CondicionIvaSerializer(many=False)
-    telefono = serializers.IntegerField()
-    nuevoTelefono = serializers.IntegerField()
-
-'''
+   GananciaTotales = serializers.IntegerField()
+   HireDate = serializers.DateTimeField()

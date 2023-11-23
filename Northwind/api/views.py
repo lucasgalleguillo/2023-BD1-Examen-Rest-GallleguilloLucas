@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.http import HttpResponse
 from .models import *
+from django.db.models import Sum
 # Create your views here.
 
 @api_view(["GET", "POST"])
@@ -292,3 +293,66 @@ def getEmployeeById(request, pk):
 
 # ---------------------------------------- PRUEBAS -------------------------------------------
 
+# @api_view(["GET"])
+# def punto1(request):   
+#     categoria = request.query_params.get("categoryid")
+#     cantidadEsperada = request.query_params.get("CantidadEsperada")
+#     order = Orders.objects.filter()
+#     ordenesDetails = Orderdetails.objects.filter(productid__categoryid = categoria) 
+#     resultados = []
+#     for e in ordenesDetails:
+#         precioTotal = 0
+#         precioTotal += e.calcularSubTotalSubTotal()
+#         ordenes = e.orderid.objects.all()
+
+#         for i in ordenes:
+#             empleado = ordenes.employeeid
+#             for a in empleado:
+#                 resultado = {
+#                     "id" : a.employeeid,
+#                     "nombre" : a.firstname + " " + a.lastname,
+#                     "GananciasTotales" : precioTotal,
+#                     "HireDate" : a.hiredate,
+#                 }
+#                 if precioTotal >= cantidadEsperada:
+#                     resultados.append(resultado)
+#     serializados = Punto1Serializer(resultados, many=True)
+#     return Response(serializados.data)
+
+
+
+@api_view(['GET'])
+def punto1(request):
+    # Obtener parámetros de la solicitud
+    categoria = request.query_params.get("categoryid")
+    cantidadEsperada = float(request.query_params.get("cantidad", 0))
+
+    if not Categories.objects.filter(categoryid=categoria).exists():
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    detalles_ordenes = Orderdetails.objects.filter(
+        productid__categoryid=categoria,
+    )
+
+    resultados = []
+    for detalle in detalles_ordenes:
+        empleado = detalle.orderid.employeeid
+        ganancias_totales = detalles_ordenes.filter(
+            orderid__employeeid=empleado
+        ).aggregate(Sum(int('quantity') * int('unitprice')))['quantity__sum']
+
+        if ganancias_totales >= cantidadEsperada:
+            resultado = {
+                "id": empleado.employeeid,
+                "nombre": f"{empleado.firstname} {empleado.lastname}",
+                "GananciasTotales": ganancias_totales,
+                "HireDate": empleado.hiredate,
+            }
+            resultados.append(resultado)
+
+    if not resultados:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializados = Punto1Serializer(resultados, many=True)
+    return Response(serializados.data)
+    
